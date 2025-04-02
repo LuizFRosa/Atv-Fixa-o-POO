@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+
+public abstract class Animal
+{
+    public required string Nome { get; set; }
+
+    private int idade;
+    public int Idade
+    {
+        get => idade;
+        set
+        {
+            if (value < 0)
+                throw new ArgumentException("A idade não pode ser negativa.");
+            idade = value;
+        }
+    }
+
+    public abstract void EmitirSom();
+
+    public virtual void Apresentar()
+    {
+        Console.WriteLine($"Olá, eu sou {Nome}, e tenho {Idade} anos.");
+        EmitirSom();
+    }
+}
+
+public class Lobo : Animal
+{
+    public override void EmitirSom()
+    {
+        Console.WriteLine("Auuuuu!");
+    }
+}
+
+public class Raposa : Animal
+{
+    public override void EmitirSom()
+    {
+        Console.WriteLine("Ring-ding-ding-ding-dingeringeding!");
+    }
+}
+
+public class Veterinario
+{
+    public string Especialidade { get; }
+
+    public Veterinario(string especialidade)
+    {
+        if (especialidade != "Felinos" && especialidade != "Caninos")
+            throw new ArgumentException("Especialidade deve ser 'Felinos' ou 'Caninos'.");
+
+        Especialidade = especialidade;
+    }
+
+    public void Examinar(Animal animal)
+    {
+        Console.WriteLine($"\nO Veterinário especializado em {Especialidade} está examinando {animal.Nome}...");
+        animal.EmitirSom();
+    }
+}
+
+public class Zoo
+{
+    private List<Animal> animais = new List<Animal>();
+
+    public void AdicionarAnimal(Animal animal)
+    {
+        if (animal == null) return;
+
+        if (!animais.Exists(a => a.Nome.Equals(animal.Nome, StringComparison.OrdinalIgnoreCase))) 
+        {
+            animais.Add(animal);
+            Console.WriteLine($"{animal.Nome} foi adicionado ao zoológico.");
+        }
+        else
+        {
+            Console.WriteLine($"O animal {animal.Nome} já está no zoológico.");
+        }
+    }
+
+    public void ListarAnimais()
+    {
+        if (animais.Count == 0)
+        {
+            Console.WriteLine("O zoológico está vazio.");
+            return;
+        }
+
+        Console.WriteLine("\nAnimais no zoológico:");
+        foreach (var animal in animais)
+        {
+            animal.Apresentar();
+        }
+    }
+
+    public Animal? EncontrarAnimal(string nome)
+    {
+        return animais.Find(a => a.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase));
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Zoo zoo = new Zoo();
+        Veterinario vet = new Veterinario("Caninos");
+
+        while (true)
+        {
+            Console.WriteLine("\n--- MENU DO SEU ZOOLÓGICO ---");
+            Console.WriteLine("1. Adicionar Lobo");
+            Console.WriteLine("2. Adicionar Raposa");
+            Console.WriteLine("3. Listar Animais");
+            Console.WriteLine("4. Examinar Animal");
+            Console.WriteLine("5. Sair");
+            Console.Write("Escolha uma opção: ");
+
+            string opcao = Console.ReadLine() ?? "";
+
+            switch (opcao)
+            {
+                case "1":
+                    Console.Write("Nome do Lobo: ");
+                    string nomeLobo = Console.ReadLine() ?? "Lobo Desconhecido";
+                    Console.Write("Idade do Lobo: ");
+                    if (int.TryParse(Console.ReadLine(), out int idadeLobo))
+                    {
+                        Lobo lobo = new Lobo { Nome = nomeLobo, Idade = idadeLobo };
+                        zoo.AdicionarAnimal(lobo);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Idade inválida. O animal não foi adicionado.");
+                    }
+                    break;
+
+                case "2":
+                    Console.Write("Nome da Raposa: ");
+                    string nomeRaposa = Console.ReadLine() ?? "Raposa Desconhecida";
+                    Console.Write("Idade da Raposa: ");
+                    if (int.TryParse(Console.ReadLine(), out int idadeRaposa))
+                    {
+                        Raposa raposa = new Raposa { Nome = nomeRaposa, Idade = idadeRaposa };
+                        zoo.AdicionarAnimal(raposa);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Idade inválida. O animal não foi adicionado.");
+                    }
+                    break;
+
+                case "3":
+                    zoo.ListarAnimais();
+                    break;
+
+                case "4":
+                    Console.Write("Nome do animal a ser examinado: ");
+                    string nomeExaminado = Console.ReadLine() ?? "";
+                    Animal? animal = zoo.EncontrarAnimal(nomeExaminado);
+                    if (animal != null)
+                    {
+                        vet.Examinar(animal);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Animal não encontrado.");
+                    }
+                    break;
+
+                case "5":
+                    Console.WriteLine("Saindo...");
+                    return;
+
+                default:
+                    Console.WriteLine("Opção inválida! Tente novamente.");
+                    break;
+            }
+        }
+    }
+}
